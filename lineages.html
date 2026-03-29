@@ -154,6 +154,11 @@
             box-shadow: 0 4px 15px rgba(93, 64, 55, 0.1);
         }
         
+        /* Ensure table text is always visible when editing */
+        .dm-active-edit .prog-table th:focus {
+            color: #3e2723 !important;
+        }
+        
         .dm-active-edit [contenteditable="true"]:empty::before {
             content: "Click to add entry..."; color: #bcaaa4; font-style: italic; pointer-events: none; display: block;
         }
@@ -648,7 +653,7 @@
                                 <div class="overflow-x-auto pb-2">
                                     <table class="prog-table w-full min-w-[500px] md:min-w-full">
                                         <thead><tr>${table.headers.map((h, hIdx) => `<th class="dm-editable" contenteditable="${isDM}" oninput="window.updateMechTableField(${tIdx}, 'headers', this.innerText, ${hIdx})">${h}</th>`).join('')}</tr></thead>
-                                        <tbody>${table.rows.map((row, rIdx) => `<tr>${row.map((cell, cIdx) => `<td class="dm-editable" contenteditable="${isDM}" oninput="window.updateMechTableField(${tIdx}, 'rows', this.innerText, rIdx, cIdx)">${isDM ? cell : window.parseAeonfallContent(cell, false)}</td>`).join('')}</tr>`).join('')}</tbody>
+                                        <tbody>${table.rows.map((row, rIdx) => `<tr>${row.map((cell, cIdx) => `<td class="dm-editable" contenteditable="${isDM}" oninput="window.updateMechTableField(${tIdx}, 'rows', this.innerText, ${rIdx}, ${cIdx})">${isDM ? cell : window.parseAeonfallContent(cell, false)}</td>`).join('')}</tr>`).join('')}</tbody>
                                     </table>
                                 </div>
                             </div>
