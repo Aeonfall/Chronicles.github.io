@@ -136,29 +136,67 @@
         .finding-stamp { margin-bottom: 50px; padding-left: 35px; border-left: 4px solid #b8860b; background: linear-gradient(90deg, rgba(184, 134, 11, 0.03) 0%, transparent 100%); padding-top: 20px; padding-bottom: 20px; position: relative; }
         .finding-header { font-family: 'Special Elite', cursive; font-size: 14px; font-weight: 900; color: #fdfaf3; background: #3e2723 !important; display: inline-block; padding: 8px 22px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; border-radius: 2px; box-shadow: 4px 4px 0 #b8860b; }
 
-        /* SCRIPT MODULE STYLING */
-        .script-module-container { padding: 40px 0; border-bottom: 1px solid rgba(141, 110, 99, 0.15); }
+        /* SCRIPT MODULE STYLING - Tightened Vertical Spacing */
+        .script-protocol-container { 
+            padding: 25px 30px; 
+            background: rgba(93, 64, 55, 0.02);
+            border-left: 4px solid #8d6e63;
+            border-radius: 0 4px 4px 0;
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+        }
+        .script-protocol-container::before {
+            content: 'TERMINAL_ENTRY';
+            position: absolute;
+            top: 5px;
+            right: 15px;
+            font-family: monospace;
+            font-size: 8px;
+            color: #8d6e63;
+            letter-spacing: 2px;
+            opacity: 0.4;
+        }
         .script-module-header {
             font-family: 'Architects Daughter', cursive;
             font-weight: 400;
-            font-size: clamp(24px, 5vw, 32px);
-            color: #2c1810; /* Dark Ink Brown */
-            border-bottom: 2px solid rgba(141, 110, 99, 0.3); /* Subtle hand-drawn underline look */
-            padding-bottom: 5px;
-            margin-bottom: 25px;
-            display: inline-block;
+            font-size: clamp(22px, 5vw, 28px);
+            color: #2c1810; 
+            margin-bottom: 15px;
+            display: flex; 
+            align-items: center;
             text-transform: none;
+            text-align: left;
+            border-bottom: 1px solid rgba(141, 110, 99, 0.2);
+            width: 100%;
+            padding-bottom: 6px;
+        }
+        .script-module-header::before {
+            content: '>>';
+            font-family: monospace;
+            font-weight: bold;
+            margin-right: 12px;
+            color: #8d6e63;
+            font-size: 0.8em;
         }
         .script-list-area { 
-            font-family: 'Roboto Slab', serif; 
+            font-family: 'Special Elite', cursive; 
             font-weight: 400; 
-            font-size: 17px; 
+            font-size: 16px; 
             color: #1a0f0a;
-            line-height: 1.6;
-            white-space: pre-wrap; /* Crucial for vertical alignment */
+            line-height: 1.35; /* Tightened line height */
+            white-space: pre-wrap; 
+            text-align: left !important;
+            width: 100%;
+            display: block;
+            padding-left: 5px;
         }
-        .script-list-area ul { list-style-type: disc; padding-left: 20px; margin: 15px 0; }
-        .script-list-area li { margin-bottom: 8px; font-weight: 700; color: #1a0f0a; }
+        .script-list-area ul { list-style-type: square; padding-left: 18px; margin: 5px 0; text-align: left; width: 100%; }
+        .script-list-area li { margin-bottom: 2px; font-weight: 400; color: #1a0f0a; text-align: left; list-style-position: outside; }
 
         .leather-tile { background: #5d4037; background-image: url('https://www.transparenttextures.com/patterns/dark-leather.png'); color: #fdfaf3; padding: 22px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); border-top: 4px solid #b8860b; box-shadow: 0 8px 20px rgba(0,0,0,0.25); margin-bottom: 15px; }
         .leather-tile-label { font-family: 'Cinzel', serif; font-size: 10px; color: #dcc89f; display: block; margin-bottom: 10px; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(184, 134, 11, 0.3); padding-bottom: 6px; }
@@ -229,6 +267,7 @@
             .prog-table { font-size: 11px; }
             .prog-table th { font-size: 9px; padding: 10px 8px; }
             .prog-table td { padding: 10px 8px; }
+            .script-protocol-container { padding: 20px; }
         }
     </style>
 </head>
@@ -399,6 +438,8 @@
 
         window.parseAeonfallContent = (text, isDM) => {
             if (!text) return '';
+            
+            // Core Formatting
             let html = text.replace(/&&([^&]+)&&/g, (match, content) => {
                 const parts = content.split('|');
                 const term = parts[0].trim();
@@ -409,10 +450,9 @@
             html = html.replace(/\*(.*?)\*/g, '<i>$1</i>');
             html = html.replace(/__(.*?)__/g, '<u>$1</u>');
             
-            // Bullet Point Support (Typing - or * creates bullets)
-            // Enhanced to handle multiline lists properly
+            // Bullet Point Support
             html = html.replace(/^[\s]*[-*•]\s+(.+)/gm, '<li>$1</li>');
-            html = html.replace(/(<li>.*<\/li>(\n)?)+/g, (match) => `<ul class="my-4 space-y-1">${match}</ul>`);
+            html = html.replace(/(<li>.*<\/li>(\n)?)+/g, (match) => `<ul class="my-2 space-y-0">${match}</ul>`);
             
             return html;
         };
@@ -420,8 +460,8 @@
         window.renderMedia = (url, cssClass = "") => {
             if (!url) return '';
             return url.includes('.mp4') ? 
-                `<video src="${url}" class="${cssClass}" autoplay loop muted></video>` : 
-                `<img src="${url}" class="${cssClass}">`;
+                `<video id="lightbox-media-element" src="${url}" class="${cssClass}" autoplay loop muted></video>` : 
+                `<img id="lightbox-media-element" src="${url}" class="${cssClass}">`;
         };
 
         // Navigation & UI
@@ -734,26 +774,26 @@
                 </div>
             `;
 
-            // LEAF 3 - Scripts (Improved Vertical List Alignment)
+            // LEAF 3 - Scripts (Improved Vertical Alignment & Spacing)
             const scriptTiers = JSON.parse(v.scriptTiers || '[]');
             document.getElementById('content-scripts').innerHTML = `
                 <h2 class="record-title-culture dm-editable break-words" contenteditable="${isDM}" oninput="window.dbUp('${v.id}', 'headerScripts', this.innerText)">${v.headerScripts || 'Terminal Scripts'}</h2>
-                <div class="mt-6 md:mt-8 space-y-12">
+                <div class="mt-6 md:mt-8 space-y-6 w-full flex flex-col items-start">
                     ${scriptTiers.map((tier, idx) => `
-                        <div class="script-module-container relative group">
+                        <div class="script-protocol-container group relative">
                             <div class="script-module-header dm-editable break-words" contenteditable="${isDM}" oninput="window.updateCollectionField(${idx}, 'scriptTiers', 'title', this.innerText)">
-                                ${tier.title || 'NEW SCRIPT TIER'}
+                                ${tier.title || 'NEW PROTOCOL TIER'}
                             </div>
                             <div class="script-list-area dm-editable min-h-[60px] break-words" contenteditable="${isDM}" oninput="window.updateCollectionField(${idx}, 'scriptTiers', 'list', this.innerText)">
                                 ${isDM ? (tier.list || '') : window.parseAeonfallContent(tier.list, false)}
                             </div>
                             ${isDM ? `
-                                <div class="mt-4 flex gap-2">
-                                    <button onclick="window.removeCollectionItem(${idx}, 'scriptTiers')" class="text-red-900 bg-red-900/5 hover:bg-red-900/20 px-3 py-1.5 rounded-sm text-[9px] font-black uppercase border border-red-900/20">Shred Module</button>
+                                <div class="mt-4 pt-2 border-t border-dashed border-[#8d6e63]/20 w-full flex justify-end">
+                                    <button onclick="window.removeCollectionItem(${idx}, 'scriptTiers')" class="text-red-900 bg-red-900/5 hover:bg-red-900/20 px-3 py-1.5 rounded-sm text-[9px] font-black uppercase border border-red-900/20 transition-all">Expunge Module</button>
                                 </div>` : ''}
                         </div>
                     `).join('')}
-                    ${scriptTiers.length === 0 ? '<div class="italic text-[#8d6e63] py-12 text-center opacity-50">No scripts registered for this vocation.</div>' : ''}
+                    ${scriptTiers.length === 0 ? '<div class="italic text-[#8d6e63] py-12 text-center opacity-50 w-full">Terminal awaiting script input...</div>' : ''}
                 </div>
             `;
         };
@@ -907,7 +947,7 @@
         window.addScriptTier = () => {
             const v = vocations.find(x => x.id === activeVocId);
             const items = JSON.parse(v.scriptTiers || '[]');
-            items.push({ title: "1ST TIER SCRIPTS", list: "- New Script" });
+            items.push({ title: "1ST TIER SCRIPTS", list: "- Boost\n- Statusrite" });
             performUpdate(activeVocId, { scriptTiers: JSON.stringify(items) });
             setTimeout(renderDetails, 100);
         };
