@@ -148,9 +148,9 @@
         .dm-active-edit .prog-table th:focus { color: #c5a059 !important; }
 
         .ledger-list { list-style: none; padding: 0; }
-        .ledger-list li { margin-bottom: 18px; border-bottom: 1px dashed rgba(139, 90, 43, 0.3); padding-bottom: 10px; display: flex; flex-direction: column; }
-        .ledger-list b { font-family: 'Cinzel', serif; font-size: 11px; text-transform: uppercase; color: #7a1b1b; letter-spacing: 1px; font-weight: 900; }
-        .ledger-list span { font-family: 'Lora', serif; font-size: 14px; color: #2c1e16; margin-top: 6px; }
+        .ledger-list li { margin-bottom: 24px; border-bottom: 1px dashed rgba(139, 90, 43, 0.3); padding-bottom: 16px; display: flex; flex-direction: column; }
+        .ledger-list b { font-family: 'Cinzel', serif; font-size: 11px; text-transform: uppercase; color: #7a1b1b; letter-spacing: 1px; font-weight: 900; border-bottom: 1px solid rgba(197, 160, 89, 0.3); padding-bottom: 4px; margin-bottom: 8px; }
+        .ledger-list .ledger-content { font-family: 'Lora', serif; font-size: 14px; color: #2c1e16; line-height: 1.6; }
 
     </style>
 </head>
@@ -640,7 +640,7 @@
                         </div>
                         <div class="bg-[rgba(255,255,255,0.4)] border-l-4 border-blood p-4 md:p-6 rounded shadow-inner">
                             <h4 class="font-heading font-black uppercase text-xs tracking-widest text-blood mb-3">Innate Parameters</h4>
-                            <div class="dm-editable text-sm italic leading-relaxed text-ink min-h-[40px] font-serif" contenteditable="${isDM}" oninput="window.dbUp('${race.id}','traits',this.innerText)">${race.traits || ''}</div>
+                            <div class="dm-editable text-sm italic leading-relaxed text-ink min-h-[40px] font-serif whitespace-pre-wrap" contenteditable="${isDM}" oninput="window.dbUp('${race.id}','traits',this.innerText)">${race.traits || ''}</div>
                         </div>
                     </div>
                     <div class="relative group cursor-zoom-in shadow-lg border-2 border-gold rounded overflow-hidden bg-[rgba(139,90,43,0.1)]" onclick="window.zoomMedia('${race.detailUrl}')">
@@ -663,7 +663,7 @@
                     </div>
                 </div>` : ''}
 
-                <div class="bg-[rgba(255,255,255,0.4)] border border-gold p-6 rounded shadow-inner mb-8 dm-editable font-serif text-ink leading-relaxed" contenteditable="${isDM}" oninput="window.dbUp('${race.id}', 'desc', this.innerText)">
+                <div class="bg-[rgba(255,255,255,0.4)] border border-gold p-6 rounded shadow-inner mb-8 dm-editable font-serif text-ink leading-relaxed whitespace-pre-wrap" contenteditable="${isDM}" oninput="window.dbUp('${race.id}', 'desc', this.innerText)">
                     ${(race.desc && race.desc.length > 0) ? `<span class="float-left text-5xl font-heading text-blood leading-none pr-3 pt-2">${race.desc.charAt(0)}</span>${race.desc.slice(1)}` : 'Click to add description...'}
                 </div>
 
@@ -671,7 +671,7 @@
                     ${(race.intros || []).map((intro, idx) => `
                     <div class="border-l-4 border-gold pl-6 py-2 relative bg-gradient-to-r from-[rgba(197,160,89,0.1)] to-transparent">
                         <h3 class="font-heading font-black text-sm text-parchment bg-ink inline-block px-4 py-1 uppercase tracking-widest mb-4 dm-editable shadow" contenteditable="${isDM}" oninput="window.updateIntroField(${idx}, 'leftTitle', this.innerText)">${intro.leftTitle || 'LOG ENTRY'}</h3>
-                        <div class="dm-editable font-serif leading-relaxed text-sm text-ink min-h-[40px] break-words" contenteditable="${isDM}" oninput="window.updateIntroField(${idx}, 'leftText', this.innerText)">${intro.leftText || ''}</div>
+                        <div class="dm-editable font-serif leading-relaxed text-sm text-ink min-h-[40px] break-words whitespace-pre-wrap" contenteditable="${isDM}" oninput="window.updateIntroField(${idx}, 'leftText', this.innerText)">${intro.leftText || ''}</div>
                         ${isDM ? `<button onclick="window.removeSection(${idx})" class="absolute top-0 right-0 text-blood hover:text-red-600 px-2 py-1 text-[10px] uppercase font-black transition-colors"><i class="fa-solid fa-trash"></i></button>` : ''}
                     </div>`).join('')}
                 </div>
@@ -691,7 +691,7 @@
                             { f: 'belief', l: 'Belief Systems' },
                             { f: 'culturalPractices', l: 'Cultural Practices' },
                             { f: 'attitudes', l: 'Societal Attitudes' }
-                        ].map(item => `<li><b>${item.l}:</b> <span class="dm-editable min-h-[20px] block break-words" contenteditable="${isDM}" oninput="window.dbUp('${race.id}','${item.f}',this.innerText)">${race[item.f] || ''}</span></li>`).join('')}
+                        ].map(item => `<li><b class="block">${item.l}:</b> <div class="dm-editable ledger-content min-h-[20px] w-full break-words whitespace-pre-wrap" contenteditable="${isDM}" oninput="window.dbUp('${race.id}','${item.f}',this.innerText)">${race[item.f] || ''}</div></li>`).join('')}
                     </ul>
                     
                     <div class="flex flex-col gap-4">
@@ -741,11 +741,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <div>
                             <b class="text-[10px] uppercase text-ink block mb-2 tracking-widest font-black font-heading border-b border-gold/50 pb-1">Innate Capabilities</b>
-                            <div class="dm-editable min-h-[80px] p-4 bg-[rgba(255,255,255,0.4)] rounded italic text-sm border border-gold shadow-inner break-words font-serif text-ink" contenteditable="${isDM}" oninput="window.dbUp('${race.id}','mechTraits',this.innerText)">${race.mechTraits || ''}</div>
+                            <div class="dm-editable min-h-[80px] p-4 bg-[rgba(255,255,255,0.4)] rounded italic text-sm border border-gold shadow-inner break-words font-serif text-ink whitespace-pre-wrap" contenteditable="${isDM}" oninput="window.dbUp('${race.id}','mechTraits',this.innerText)">${race.mechTraits || ''}</div>
                         </div>
                         <div>
                             <b class="text-[10px] uppercase text-ink block mb-2 tracking-widest font-black font-heading border-b border-gold/50 pb-1">Core Matrix</b>
-                            <div class="dm-editable min-h-[80px] p-4 bg-[rgba(255,255,255,0.4)] rounded italic text-sm border border-gold shadow-inner break-words font-serif text-ink" contenteditable="${isDM}" oninput="window.dbUp('${race.id}','mechDescription',this.innerText)">${race.mechDescription || ''}</div>
+                            <div class="dm-editable min-h-[80px] p-4 bg-[rgba(255,255,255,0.4)] rounded italic text-sm border border-gold shadow-inner break-words font-serif text-ink whitespace-pre-wrap" contenteditable="${isDM}" oninput="window.dbUp('${race.id}','mechDescription',this.innerText)">${race.mechDescription || ''}</div>
                         </div>
                     </div>
 
@@ -756,7 +756,7 @@
                         ].map(item => `
                             <div class="bg-[rgba(255,255,255,0.4)] p-4 border border-gold rounded shadow-inner">
                                 <span class="block text-[10px] uppercase font-black text-blood border-b border-gold pb-1 mb-2 tracking-widest font-heading">${item.l}</span>
-                                <div class="dm-editable text-sm min-h-[24px] break-words font-serif text-ink" contenteditable="${isDM}" oninput="window.dbUp('${race.id}','${item.f}',this.innerText)">${race[item.f] || ''}</div>
+                                <div class="dm-editable text-sm min-h-[24px] break-words font-serif text-ink whitespace-pre-wrap" contenteditable="${isDM}" oninput="window.dbUp('${race.id}','${item.f}',this.innerText)">${race[item.f] || ''}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -765,7 +765,7 @@
                         ${tables.map((table, tIdx) => `
                             <div class="relative group bg-[rgba(255,255,255,0.4)] p-4 rounded border border-gold shadow-inner overflow-hidden">
                                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 gap-3">
-                                    <b class="text-[12px] uppercase text-blood dm-editable font-black tracking-widest w-full lg:w-auto break-words font-heading" contenteditable="${isDM}" oninput="window.updateMechTableField(${tIdx}, 'title', this.innerText)">${table.title}</b>
+                                    <b class="text-[12px] uppercase text-blood dm-editable font-black tracking-widest w-full lg:w-auto break-words font-heading whitespace-pre-wrap" contenteditable="${isDM}" oninput="window.updateMechTableField(${tIdx}, 'title', this.innerText)">${table.title}</b>
                                     ${isDM ? `
                                         <div class="flex flex-wrap gap-2 bg-ink p-1.5 rounded shadow w-full lg:w-auto justify-center">
                                             <button onclick="window.addMechTableRow(${tIdx})" class="text-gold hover:text-white px-2 py-1 text-[9px] font-black uppercase" title="Add Row">+R</button>
@@ -780,8 +780,8 @@
                                 </div>
                                 <div class="overflow-x-auto pb-2">
                                     <table class="prog-table w-full min-w-[500px] md:min-w-full">
-                                        <thead><tr>${table.headers.map((h, hIdx) => `<th class="dm-editable" contenteditable="${isDM}" oninput="window.updateMechTableField(${tIdx}, 'headers', this.innerText, ${hIdx})">${h}</th>`).join('')}</tr></thead>
-                                        <tbody>${table.rows.map((row, rIdx) => `<tr>${row.map((cell, cIdx) => `<td class="dm-editable" contenteditable="${isDM}" oninput="window.updateMechTableField(${tIdx}, 'rows', this.innerText, ${rIdx}, ${cIdx})">${cell}</td>`).join('')}</tr>`).join('')}</tbody>
+                                        <thead><tr>${table.headers.map((h, hIdx) => `<th class="dm-editable whitespace-pre-wrap" contenteditable="${isDM}" oninput="window.updateMechTableField(${tIdx}, 'headers', this.innerText, ${hIdx})">${h}</th>`).join('')}</tr></thead>
+                                        <tbody>${table.rows.map((row, rIdx) => `<tr>${row.map((cell, cIdx) => `<td class="dm-editable whitespace-pre-wrap" contenteditable="${isDM}" oninput="window.updateMechTableField(${tIdx}, 'rows', this.innerText, ${rIdx}, ${cIdx})">${cell}</td>`).join('')}</tr>`).join('')}</tbody>
                                     </table>
                                 </div>
                             </div>
