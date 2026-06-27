@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -91,7 +91,7 @@
         .floating-roller.minimized { width: 56px; height: 56px; padding: 0; background: transparent; border: none; box-shadow: none; border-radius: 50%; pointer-events: none; }
         .floating-roller.minimized > * { pointer-events: auto; }
         
-        .floating-notes { position: fixed; bottom: 24px; left: 24px; z-index: 100; background: #f1e5c5; border-radius: 8px; border: 2px solid #c5a059; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.8); width: 320px; max-width: calc(100vw - 48px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: bottom left; }
+        .floating-notes { position: fixed; bottom: 24px; left: 24px; z-index: 100; background: #f1e5c5; border-radius: 8px; border: 2px solid #c5a059; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.8); width: 450px; max-width: calc(100vw - 48px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: bottom left; }
         .floating-notes.minimized { width: 56px; height: 56px; padding: 0; background: transparent; border: none; box-shadow: none; border-radius: 50%; pointer-events: none; }
         .floating-notes.minimized > * { pointer-events: auto; }
 
@@ -1027,7 +1027,7 @@
                     <i class="fa-solid fa-minus"></i>
                 </button>
             </div>
-            <textarea data-key="notes" class="text-[12px] h-64 p-3 bg-[rgba(255,255,255,0.4)] border border-[rgba(139,90,43,0.3)] rounded font-serif w-full shadow-inner resize-none focus:outline-none focus:border-blood flex-grow" placeholder="Character history, secret notes..."></textarea>
+            <textarea data-key="notes" class="text-[13px] h-[50vh] min-h-[300px] max-h-[75vh] p-4 bg-[rgba(255,255,255,0.4)] border border-[rgba(139,90,43,0.3)] rounded font-serif w-full shadow-inner resize-y focus:outline-none focus:border-blood flex-grow leading-relaxed" placeholder="Character history, secret notes..."></textarea>
         </div>
         <div id="notes-minimized-view">
             <button onclick="window.toggleNotes(false)" class="w-14 h-14 flex items-center justify-center bg-parchment rounded-full border-2 border-gold text-ink hover:text-blood hover:border-blood shadow-[0_4px_15px_rgba(0,0,0,0.6)] transition-all transform hover:scale-105" title="Expand Notes">
@@ -1708,6 +1708,20 @@
             document.querySelectorAll('.read-only-hide').forEach(el => el.classList.toggle('hidden', !canEdit));
             document.getElementById('sheet-readonly-badge').classList.toggle('hidden', canEdit);
             
+            // Notes Lock (DMs can see but cannot edit player notes)
+            const canEditNotes = (currentUser && char.owner === currentUser.username) || (isDM && char.type !== 'PC');
+            const floatingNotes = document.querySelector('#quick-notes-bar textarea[data-key="notes"]');
+            if (floatingNotes) {
+                floatingNotes.readOnly = !canEditNotes;
+                if (!canEditNotes) {
+                    floatingNotes.classList.add('opacity-80', 'cursor-not-allowed');
+                    floatingNotes.placeholder = "No notes provided.";
+                } else {
+                    floatingNotes.classList.remove('opacity-80', 'cursor-not-allowed');
+                    floatingNotes.placeholder = "Character history, secret notes...";
+                }
+            }
+
             /* PROGRESSION LOCKS */
             const dmUnlockCheck = document.getElementById('dm-unlock-sheet');
             if (dmUnlockCheck) dmUnlockCheck.checked = !!char.unlockedByDM;
@@ -1716,20 +1730,17 @@
 
             const classInput = document.getElementById('class-input');
             const mClassBtn = document.getElementById('btn-multiclass');
-            const hasClass = char.class && char.class.trim() !== "";
             if (classInput) {
-                if (hasClass && isLockedProgression) {
+                if (canEdit) {
+                    classInput.disabled = false;
+                    classInput.readOnly = false;
+                    classInput.classList.remove('opacity-70', 'cursor-not-allowed');
+                    if (mClassBtn) mClassBtn.classList.remove('hidden');
+                } else {
                     classInput.readOnly = true;
                     classInput.disabled = true;
                     classInput.classList.add('opacity-70', 'cursor-not-allowed');
                     if (mClassBtn) mClassBtn.classList.add('hidden');
-                } else {
-                    if (canEdit) {
-                        classInput.disabled = false;
-                        classInput.readOnly = false;
-                        classInput.classList.remove('opacity-70', 'cursor-not-allowed');
-                        if (mClassBtn) mClassBtn.classList.remove('hidden');
-                    }
                 }
             }
 
