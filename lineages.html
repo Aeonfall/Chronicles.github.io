@@ -116,7 +116,7 @@
             background: rgba(255, 255, 255, 0.3); 
             outline: 1px dashed rgba(139, 90, 43, 0.5); 
             border-radius: 4px; padding: 4px; 
-            transition: background 0.2s, outline 0.2s;
+            transition: background 0.2s, outline 0.2s, color 0.2s;
             min-height: 1.2em;
         }
         .dm-active-edit .dm-editable:focus {
@@ -125,6 +125,17 @@
         }
         .dm-active-edit [contenteditable="true"]:empty::before {
             content: "Click to add entry..."; color: #888; font-style: italic; pointer-events: none; display: block;
+        }
+
+        /* Specific fix for dark elements (like LOG ENTRY titles) being edited */
+        .dm-active-edit .bg-ink.dm-editable {
+            background-color: #2c1e16 !important; /* Keep it dark */
+            color: #f1e5c5 !important;            /* Keep text light */
+            outline: 1px dashed rgba(197, 160, 89, 0.8); 
+        }
+        .dm-active-edit .bg-ink.dm-editable:focus {
+            background-color: #1a110b !important;
+            outline: 2px solid #c5a059;
         }
 
         /* TABLES */
@@ -222,7 +233,7 @@
                             <!-- Category Tabs & Management -->
                             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-6 pb-2 border-b border-gold/30">
                                 <div id="category-tabs" class="flex flex-wrap gap-2 flex-grow"></div>
-                                <button id="edit-categories-btn" onclick="window.openCategoryModal()" class="hidden fantasy-btn-alt px-3 py-1.5 rounded text-[10px] whitespace-nowrap"><i class="fa-solid fa-gear mr-1"></i> Terminology</button>
+                                <button id="edit-categories-btn" onclick="window.openCategoryModal()" class="hidden fantasy-btn-alt px-3 py-1.5 rounded text-[10px] whitespace-nowrap"><i class="fa-solid fa-tags mr-1"></i> Edit Terminology</button>
                             </div>
 
                             <div id="stack-grid" class="grid-container"></div>
