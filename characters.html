@@ -91,6 +91,10 @@
         .floating-roller.minimized { width: 56px; height: 56px; padding: 0; background: transparent; border: none; box-shadow: none; border-radius: 50%; pointer-events: none; }
         .floating-roller.minimized > * { pointer-events: auto; }
         
+        .floating-notes { position: fixed; bottom: 24px; left: 24px; z-index: 100; background: #f1e5c5; border-radius: 8px; border: 2px solid #c5a059; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.8); width: 320px; max-width: calc(100vw - 48px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: bottom left; }
+        .floating-notes.minimized { width: 56px; height: 56px; padding: 0; background: transparent; border: none; box-shadow: none; border-radius: 50%; pointer-events: none; }
+        .floating-notes.minimized > * { pointer-events: auto; }
+
         .dice-grid-btn { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border: 2px solid #8b5a2b; border-radius: 8px; font-weight: 900; font-size: 15px; transition: all 0.1s; background-color: rgba(255,255,255,0.5); color: #2c1e16; font-family: 'Cinzel', serif; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .dice-grid-btn:hover { background-color: rgba(197, 160, 89, 0.3); border-color: #7a1b1b; color: #7a1b1b; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
 
@@ -319,17 +323,17 @@
                 <div id="pc-sheet-layout">
                     <header class="sheet-card mb-8">
                         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                            <div class="lg:col-span-4 flex flex-col gap-4">
+                            <div class="lg:col-span-5 flex flex-col gap-4">
                                 <div><input type="text" id="pc-name-field" class="text-4xl font-bold font-heading w-full mb-1 text-blood drop-shadow-sm !border-b-2 !border-gold" placeholder="Character Name" data-key="name"><label class="tiny-label">Character Name</label></div>
-                            </div>
-                            <div class="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-4">
                                 <div>
                                     <div class="flex justify-between items-center pr-1">
-                                        <input type="text" data-key="class" id="class-input" placeholder="Fighter" oninput="window.calcMods(); window.updateClassSpecifics();">
-                                        <button id="btn-multiclass" onclick="window.openMulticlassModal()" class="text-[8px] font-black uppercase text-blood bg-[rgba(122,27,27,0.1)] px-1.5 py-0.5 rounded hover:bg-blood hover:text-parchment transition-colors read-only-hide whitespace-nowrap ml-1 shrink-0 shadow-sm border border-[rgba(122,27,27,0.3)]">M.Class</button>
+                                        <input type="text" data-key="class" id="class-input" class="text-lg font-serif font-bold text-ink w-full mr-2" placeholder="Fighter" oninput="window.calcMods(); window.updateClassSpecifics();">
+                                        <button id="btn-multiclass" onclick="window.openMulticlassModal()" class="text-[8px] font-black uppercase text-blood bg-[rgba(122,27,27,0.1)] px-1.5 py-0.5 rounded hover:bg-blood hover:text-parchment transition-colors read-only-hide whitespace-nowrap shrink-0 shadow-sm border border-[rgba(122,27,27,0.3)]">M.Class</button>
                                     </div>
                                     <label id="class-label" class="tiny-label">Class</label>
                                 </div>
+                            </div>
+                            <div class="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-4">
                                 <div><input type="number" data-key="level" placeholder="1" onchange="window.updateLevelDependencies(this.value)"><label id="label-term-level" class="tiny-label">Level</label></div>
                                 <div><select id="party-select" data-key="partyId" class="cursor-pointer"><option value="">Unassigned</option></select><label id="label-term-party" class="tiny-label">Party</label></div>
                                 <div><input type="text" data-key="race" placeholder="Human"><label id="label-term-race" class="tiny-label">Race</label></div>
@@ -498,7 +502,6 @@
                                     <button onclick="window.switchSheetTab('features')" class="tab-btn" id="tab-btn-features">Traits</button>
                                     <button onclick="window.switchSheetTab('background')" class="tab-btn" id="tab-btn-background">Background</button>
                                     <button onclick="window.switchSheetTab('companion')" class="tab-btn" id="tab-btn-companion">Companion</button>
-                                    <button onclick="window.switchSheetTab('notes')" class="tab-btn" id="tab-btn-notes">Notes</button>
                                 </div>
                                 
                                 <div class="tab-content-area">
@@ -655,11 +658,6 @@
                                     <div id="tab-content-companion" class="tab-pane hidden">
                                         <div id="label-term-companion" class="beyond-header">Personal Companion</div>
                                         <div id="companion-view-area"></div>
-                                    </div>
-
-                                    <div id="tab-content-notes" class="tab-pane hidden">
-                                        <div id="label-term-notes" class="beyond-header">Character Notes</div>
-                                        <textarea data-key="notes" class="text-[12px] h-96 p-3 bg-[rgba(255,255,255,0.4)] border border-[rgba(139,90,43,0.3)] rounded font-serif w-full" placeholder="Character history, secret notes..."></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -1017,6 +1015,24 @@
             <div id="roll-label" class="text-gold font-heading text-2xl mb-2 uppercase tracking-widest">ROLL</div>
             <div id="roll-total" class="text-9xl font-black mb-4 font-serif">20</div>
             <div id="roll-breakdown" class="text-gray-300 font-mono text-lg bg-black/40 border border-gray-600 px-6 py-2 rounded-full inline-block"></div>
+        </div>
+    </div>
+
+    <!-- FLOATING NOTES BAR -->
+    <div id="quick-notes-bar" class="hidden-view floating-notes font-heading minimized">
+        <div id="notes-expanded-view" class="hidden h-full flex flex-col">
+            <div class="flex items-center justify-between mb-2 border-b border-[rgba(139,90,43,0.3)] pb-2 text-ink relative shrink-0">
+                <h3 id="label-term-notes" class="font-heading font-bold text-blood uppercase tracking-wider">Character Notes</h3>
+                <button onclick="window.toggleNotes(true)" class="text-gray-500 hover:text-blood transition-colors w-8 h-8 flex items-center justify-center rounded-full" title="Minimize">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+            </div>
+            <textarea data-key="notes" class="text-[12px] h-64 p-3 bg-[rgba(255,255,255,0.4)] border border-[rgba(139,90,43,0.3)] rounded font-serif w-full shadow-inner resize-none focus:outline-none focus:border-blood flex-grow" placeholder="Character history, secret notes..."></textarea>
+        </div>
+        <div id="notes-minimized-view">
+            <button onclick="window.toggleNotes(false)" class="w-14 h-14 flex items-center justify-center bg-parchment rounded-full border-2 border-gold text-ink hover:text-blood hover:border-blood shadow-[0_4px_15px_rgba(0,0,0,0.6)] transition-all transform hover:scale-105" title="Expand Notes">
+                <i class="fa-solid fa-book-open text-2xl"></i>
+            </button>
         </div>
     </div>
 
@@ -1617,8 +1633,8 @@
             return d;
         }
 
-        window.openSheet = (id) => { activeCharId = id; document.getElementById('dashboard-screen')?.classList.add('hidden-view'); document.getElementById('sheet-screen')?.classList.remove('hidden-view'); document.getElementById('quick-roll-bar')?.classList.remove('hidden-view'); initSheetUI(); syncSheetData(); window.switchSheetTab('actions'); window.switchSubFilter('all'); window.scrollTo(0,0); };
-        window.closeSheet = () => { activeCharId = null; document.getElementById('sheet-screen')?.classList.add('hidden-view'); document.getElementById('dashboard-screen')?.classList.remove('hidden-view'); document.getElementById('quick-roll-bar')?.classList.add('hidden-view'); window.scrollTo(0,0);};
+        window.openSheet = (id) => { activeCharId = id; document.getElementById('dashboard-screen')?.classList.add('hidden-view'); document.getElementById('sheet-screen')?.classList.remove('hidden-view'); document.getElementById('quick-roll-bar')?.classList.remove('hidden-view'); document.getElementById('quick-notes-bar')?.classList.remove('hidden-view'); initSheetUI(); syncSheetData(); window.switchSheetTab('actions'); window.switchSubFilter('all'); window.scrollTo(0,0); };
+        window.closeSheet = () => { activeCharId = null; document.getElementById('sheet-screen')?.classList.add('hidden-view'); document.getElementById('dashboard-screen')?.classList.remove('hidden-view'); document.getElementById('quick-roll-bar')?.classList.add('hidden-view'); document.getElementById('quick-notes-bar')?.classList.add('hidden-view'); window.scrollTo(0,0);};
         
         window.createChar = async (type) => { 
             if (!currentUser) return; 
@@ -1994,6 +2010,21 @@
         };
 
         window.setRollMode = (m) => { rollMode = m; document.querySelectorAll('.roll-mode').forEach(b => b.classList.remove('active-norm', 'active-adv', 'active-dis')); if (m === 'normal') document.getElementById('mode-norm').classList.add('active-norm'); else if (m === 'adv') document.getElementById('mode-adv').classList.add('active-adv'); else if (m === 'dis') document.getElementById('mode-dis').classList.add('active-dis'); };
+
+        window.toggleNotes = (minimize) => {
+            const notesBar = document.getElementById('quick-notes-bar');
+            const exp = document.getElementById('notes-expanded-view');
+            const min = document.getElementById('notes-minimized-view');
+            if (minimize) {
+                notesBar.classList.add('minimized');
+                exp.classList.add('hidden');
+                min.classList.remove('hidden');
+            } else {
+                notesBar.classList.remove('minimized');
+                exp.classList.remove('hidden');
+                min.classList.add('hidden');
+            }
+        };
 
         window.toggleRoller = (minimize) => {
             const roller = document.getElementById('quick-roll-bar');
