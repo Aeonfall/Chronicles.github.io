@@ -218,6 +218,13 @@
                                 <h3 class="font-heading text-2xl font-bold uppercase text-blood tracking-tight">Biological Stacks</h3>
                                 <p class="font-serif italic text-xs text-ink mt-1">Dossiers of the known world</p>
                             </div>
+                            
+                            <!-- Category Tabs & Management -->
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-6 pb-2 border-b border-gold/30">
+                                <div id="category-tabs" class="flex flex-wrap gap-2 flex-grow"></div>
+                                <button id="edit-categories-btn" onclick="window.openCategoryModal()" class="hidden fantasy-btn-alt px-3 py-1.5 rounded text-[10px] whitespace-nowrap"><i class="fa-solid fa-gear mr-1"></i> Terminology</button>
+                            </div>
+
                             <div id="stack-grid" class="grid-container"></div>
                         </div>
 
@@ -267,10 +274,32 @@
         </div>
     </div>
 
+    <!-- CATEGORY/TERMINOLOGY MODAL -->
+    <div id="category-modal" class="modal-overlay hidden">
+        <div class="parchment-paper p-8 max-w-md w-full border-2 border-gold shadow-2xl">
+            <h3 class="font-heading font-black text-2xl text-ink uppercase tracking-widest mb-2">Archive Terminology</h3>
+            <p class="font-serif italic text-ink mb-6 text-sm">Manage the classifications used to organize these dossiers.</p>
+            
+            <div id="category-list-edit" class="flex flex-col gap-2 mb-4 max-h-[30vh] overflow-y-auto pr-2">
+                <!-- Dynamic inputs -->
+            </div>
+            
+            <div class="flex gap-2 mb-8">
+                <input type="text" id="new-category-input" placeholder="New Classification..." class="flex-1 p-2 text-xs bg-white/50 border border-gold rounded focus:border-blood text-ink outline-none" onkeydown="if(event.key==='Enter') window.addCategory()">
+                <button onclick="window.addCategory()" class="fantasy-btn px-4 py-2 rounded font-black text-[10px] uppercase shadow"><i class="fa-solid fa-plus"></i> Add</button>
+            </div>
+            
+            <div class="flex gap-3 font-heading">
+                <button onclick="window.saveCategories()" class="flex-1 bg-ink text-parchment py-2.5 rounded border border-gold font-bold uppercase text-xs hover:bg-[#1a110b] shadow transition-colors">Save Updates</button>
+                <button onclick="window.closeCategoryModal()" class="flex-1 bg-transparent text-ink border border-ink py-2.5 rounded font-bold uppercase text-xs hover:bg-ink hover:text-parchment transition-colors">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-        import { getFirestore, collection, doc, updateDoc, onSnapshot, addDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, updateDoc, onSnapshot, addDoc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
         // --- CORE UI FUNCTIONS ---
         window.showToast = (m) => { 
@@ -357,6 +386,9 @@
         window.currentHeritageSlide = 0;
         let isUserTyping = false;
         
+        let activeTab = 'All';
+        let CATEGORIES = ["Core Races", "Bestiari Lineages", "Automatons", "Mycelin Lineages", "Fractured Plane Lineages"];
+        
         document.addEventListener('focusin', (e) => {
             if(e.target && e.target.classList && e.target.classList.contains('dm-editable')) {
                 isUserTyping = true;
@@ -401,6 +433,78 @@
             document.getElementById('flip-text').innerText = isFlipped ? "Return to Front" : "View Details";
         };
 
+        window.renderTabs = () => {
+            const tabsContainer = document.getElementById('category-tabs');
+            if(!tabsContainer) return;
+            
+            const displayCats = ["All", ...CATEGORIES, "Uncategorized"];
+            
+            if (!displayCats.includes(activeTab)) {
+                activeTab = 'All';
+            }
+
+            tabsContainer.innerHTML = displayCats.map(cat => `
+                <button onclick="window.setTab('${cat}')" 
+                        class="px-3 py-1.5 rounded text-[10px] font-heading font-black uppercase tracking-widest transition-all
+                        ${activeTab === cat ? 'bg-blood text-parchment shadow-md border border-gold' : 'bg-transparent text-ink border border-ink/30 hover:bg-ink hover:text-parchment'}">
+                    ${cat}
+                </button>
+            `).join('');
+
+            const editBtn = document.getElementById('edit-categories-btn');
+            if(editBtn) editBtn.classList.toggle('hidden', activeRole !== 'dm');
+        };
+
+        window.setTab = (tab) => {
+            activeTab = tab;
+            window.renderTabs();
+            window.renderGrid();
+        };
+
+        // Terminology Modal Management
+        let editingCats = [];
+        window.openCategoryModal = () => {
+            editingCats = [...CATEGORIES];
+            window.renderCategoryEditList();
+            document.getElementById('category-modal').classList.remove('hidden');
+        };
+        
+        window.closeCategoryModal = () => {
+            document.getElementById('category-modal').classList.add('hidden');
+        };
+
+        window.renderCategoryEditList = () => {
+            document.getElementById('category-list-edit').innerHTML = editingCats.map((cat, i) => `
+                <div class="flex items-center gap-2">
+                    <input type="text" class="flex-1 p-2 text-xs bg-white/50 border border-gold rounded text-ink outline-none focus:border-blood" value="${cat}" oninput="editingCats[${i}] = this.value">
+                    <button onclick="editingCats.splice(${i}, 1); window.renderCategoryEditList()" class="text-blood hover:text-red-700 px-3 py-2 text-[10px]"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        };
+
+        window.addCategory = () => {
+            const input = document.getElementById('new-category-input');
+            const val = input.value.trim();
+            if(val && !editingCats.includes(val) && val !== 'All' && val !== 'Uncategorized') {
+                editingCats.push(val);
+                input.value = '';
+                window.renderCategoryEditList();
+            }
+        };
+
+        window.saveCategories = async () => {
+            if(!currentUser) return;
+            editingCats = editingCats.filter(c => c.trim().length > 0 && c !== 'All' && c !== 'Uncategorized');
+            try {
+                window.showToast("Saving terminology...");
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', DB_COLLECTION, '_lineage_config'), { categories: editingCats }, { merge: true });
+                window.closeCategoryModal();
+            } catch(e) { 
+                window.showToast("Failed to save."); 
+                console.error(e);
+            }
+        };
+
         window.setView = (v, id = null) => {
             if (currentView === v && id === activeRaceId) return; 
             
@@ -443,19 +547,31 @@
             const isDM = activeRole === 'dm';
             const grid = document.getElementById('stack-grid');
             
-            if (lineages.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-16 text-center text-ink italic font-serif text-sm opacity-60">The archives are currently empty.</div>`;
+            let filteredLineages = lineages;
+            if (activeTab !== 'All') {
+                if (activeTab === 'Uncategorized') {
+                    filteredLineages = lineages.filter(r => !r.category || !CATEGORIES.includes(r.category) || r.category === 'Uncategorized');
+                } else {
+                    filteredLineages = lineages.filter(r => r.category === activeTab);
+                }
+            }
+
+            if (filteredLineages.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-16 text-center text-ink italic font-serif text-sm opacity-60">The archives are currently empty for this classification.</div>`;
                 return;
             }
 
-            grid.innerHTML = lineages.map((race, idx) => `
+            grid.innerHTML = filteredLineages.map((race, idx) => `
                 <div class="race-card ${window.isPurgeMode ? 'border-blood shadow-[0_0_15px_rgba(122,27,27,0.3)]' : ''}" onclick="!window.isPurgeMode && window.setView('details', '${race.id}')">
                     <div class="card-bg-image">
                         ${race.gridUrl ? (race.gridUrl.includes('.mp4') ? `<video src="${race.gridUrl}" autoplay loop muted></video>` : `<img src="${race.gridUrl}">`) : '<div class="w-full h-full bg-[rgba(139,90,43,0.2)] flex items-center justify-center italic text-xs text-ink opacity-50">No Visual</div>'}
                     </div>
                     <div class="card-text-panel">
                         <h3 class="font-heading font-black text-2xl text-ink leading-none mb-1">${race.name || 'Unknown'}</h3>
-                        <p class="font-serif italic text-[10px] text-blood mb-4">Dossier #${race.custodianId || '000'}</p>
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="font-serif italic text-[10px] text-blood">Dossier #${race.custodianId || '000'}</span>
+                            <span class="text-[8px] bg-blood/10 text-blood px-1.5 py-0.5 rounded border border-blood/20 uppercase tracking-widest font-heading font-bold">${race.category || 'Uncategorized'}</span>
+                        </div>
                         <p class="font-serif text-xs text-ink line-clamp-3 mb-4">${isDM ? (race.desc || '') : (race.desc || '')}</p>
                         
                         <div class="mt-auto">
@@ -493,10 +609,24 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
                     <div class="flex flex-col">
                         <h2 class="font-heading text-4xl md:text-5xl font-black text-ink leading-none mb-2 dm-editable break-words" contenteditable="${isDM}" oninput="window.dbUp('${race.id}', 'name', this.innerText)">${race.name}</h2>
-                        <p class="border-b border-gold/50 pb-3 mb-6 uppercase text-[10px] font-black text-blood tracking-widest flex items-center gap-2">
-                            <span>Dossier ID #</span>
-                            <span class="dm-editable min-w-[30px] inline-block" contenteditable="${isDM}" oninput="window.dbUp('${race.id}', 'custodianId', this.innerText)">${race.custodianId || '994'}</span>
-                        </p>
+                        <div class="border-b border-gold/50 pb-3 mb-6 flex flex-wrap items-center gap-4 text-[10px] font-black text-blood tracking-widest uppercase">
+                            <div class="flex items-center gap-2">
+                                <span>Dossier ID #</span>
+                                <span class="dm-editable min-w-[30px] inline-block" contenteditable="${isDM}" oninput="window.dbUp('${race.id}', 'custodianId', this.innerText)">${race.custodianId || '994'}</span>
+                            </div>
+                            <span class="text-ink/30">|</span>
+                            <div class="flex items-center gap-2">
+                                <span>Class:</span>
+                                ${isDM ? `
+                                    <select class="bg-transparent border border-gold/50 rounded text-ink outline-none px-1 py-0.5 cursor-pointer hover:border-blood" onchange="window.dbUp('${race.id}', 'category', this.value)">
+                                        ${CATEGORIES.map(c => `<option value="${c}" ${c === (race.category || 'Uncategorized') ? 'selected' : ''}>${c}</option>`).join('')}
+                                        <option value="Uncategorized" ${(!race.category || !CATEGORIES.includes(race.category)) ? 'selected' : ''}>Uncategorized</option>
+                                    </select>
+                                ` : `
+                                    <span class="text-ink">${race.category || 'Uncategorized'}</span>
+                                `}
+                            </div>
+                        </div>
                         <div class="bg-[rgba(255,255,255,0.4)] border-l-4 border-blood p-4 md:p-6 rounded shadow-inner">
                             <h4 class="font-heading font-black uppercase text-xs tracking-widest text-blood mb-3">Innate Parameters</h4>
                             <div class="dm-editable text-sm italic leading-relaxed text-ink min-h-[40px] font-serif" contenteditable="${isDM}" oninput="window.dbUp('${race.id}','traits',this.innerText)">${race.traits || ''}</div>
@@ -830,10 +960,11 @@
             
             // Generate a random 3-digit Dossier ID
             const newCustodianId = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
+            const defaultCat = CATEGORIES.length > 0 ? CATEGORIES[0] : "Uncategorized";
             
             window.showToast("Inking new archive...");
             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', DB_COLLECTION), { 
-                name: "NEW SUBJECT", custodianId: newCustodianId, speed: "30", size: "M", desc: "", traits: "", intros: [],
+                name: "NEW SUBJECT", custodianId: newCustodianId, category: defaultCat, speed: "30", size: "M", desc: "", traits: "", intros: [],
                 cultureName: "", majorityPop: "", coreValues: "", government: "", belief: "", culturalPractices: "", attitudes: "",
                 mechTraits: "", mechDescription: "", mechBackgrounds: "", mechLanguages: "", mechFeats: "", mechEquipment: "", mechTables: "[]",
                 createdAt: Date.now(), order: maxOrder + 1000 
@@ -933,6 +1064,7 @@
 
                 document.getElementById('user-display-name').innerText = currentUser.username;
                 
+                window.renderTabs();
                 window.updateRoleUI();
                 renderSidebar();
 
@@ -940,7 +1072,16 @@
                 document.getElementById('dashboard-screen').classList.remove('hidden');
                 
                 onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', DB_COLLECTION), (snap) => {
-                    lineages = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => (a.order ?? a.createdAt) - (b.order ?? b.createdAt));
+                    // Extract config document for categories if present
+                    const configDoc = snap.docs.find(d => d.id === '_lineage_config');
+                    if (configDoc) {
+                        CATEGORIES = configDoc.data().categories || ["Core Races", "Bestiari Lineages", "Automatons", "Mycelin Lineages", "Fractured Plane Lineages"];
+                    }
+                    
+                    lineages = snap.docs.filter(d => d.id !== '_lineage_config').map(d => ({id: d.id, ...d.data()})).sort((a,b) => (a.order ?? a.createdAt) - (b.order ?? b.createdAt));
+                    
+                    window.renderTabs();
+                    
                     if (!isUserTyping) {
                         if(currentView === 'grid') renderGrid(); else renderDetails();
                     }
