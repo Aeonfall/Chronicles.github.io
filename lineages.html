@@ -492,11 +492,20 @@
             window.renderCategoryEditList();
         };
 
+        window.updateCategoryEdit = (idx, val) => {
+            editingCats[idx] = val;
+        };
+
+        window.removeCategoryEdit = (idx) => {
+            editingCats.splice(idx, 1);
+            window.renderCategoryEditList();
+        };
+
         window.renderCategoryEditList = () => {
             document.getElementById('category-list-edit').innerHTML = editingCats.map((cat, i) => `
                 <div class="flex items-center gap-2">
-                    <input type="text" class="flex-1 p-2 text-xs bg-white/50 border border-gold rounded text-ink outline-none focus:border-blood" value="${cat}" oninput="editingCats[${i}] = this.value">
-                    <button onclick="editingCats.splice(${i}, 1); window.renderCategoryEditList()" class="text-blood hover:text-red-700 px-3 py-2 text-[10px]"><i class="fa-solid fa-trash"></i></button>
+                    <input type="text" class="flex-1 p-2 text-xs bg-white/50 border border-gold rounded text-ink outline-none focus:border-blood" value="${cat}" oninput="window.updateCategoryEdit(${i}, this.value)">
+                    <button onclick="window.removeCategoryEdit(${i})" class="text-blood hover:text-red-700 px-3 py-2 text-[10px]"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `).join('');
         };
